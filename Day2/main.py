@@ -19,6 +19,7 @@ def part1():
     print(f"The final horizontal position equals: {hor_pos}")
     print(f"Multiplying them gives: {depth * hor_pos}")
 
+
 def part2():
     moves = np.loadtxt("input.txt", dtype="str")
 
