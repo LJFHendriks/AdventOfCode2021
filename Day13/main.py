@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class TransPaper:
     def __init__(self, matrix):
         self.matrix = np.array(matrix)
@@ -26,6 +27,18 @@ class TransPaper:
 
     def count_dots(self):
         return np.count_nonzero(self.matrix)
+
+    def __str__(self):
+        string = ""
+        for line in self.matrix:
+            for char in line:
+                if char > 0:
+                    string += "█"
+                else:
+                    string += " "
+            string += "\n"
+        return string
+
 
 def get_input(filename="input.txt"):
     with open(filename, "r") as file:
@@ -69,13 +82,8 @@ def part2():
             trans_paper.fold_x(position)
         elif type == "y":
             trans_paper.fold_y(position)
-    for line in trans_paper.matrix:
-        for char in line:
-            if char > 0:
-                print("#", end="")
-            else:
-                print(".", end="")
-        print("")
+
+    print(trans_paper)
 
 
 if __name__ == "__main__":
