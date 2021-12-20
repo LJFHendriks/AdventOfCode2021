@@ -138,7 +138,6 @@ def part1():
     result = snail_fish_list[0]
     for snail_fish in snail_fish_list[1:]:
         result += snail_fish
-    print(result)
     print(result.magnitude)
 
 
