@@ -22,47 +22,39 @@ class ALU:
     def __init__(self, operations):
         self.operations = operations
         self.states = {
-            (0, 0, 0, 0): ""
+            (0, 0, 0, 0): "0"
         }
 
     def search_lowest(self):
-        for operation in tqdm(self.operations):
+        i = 0
+        while i < len(self.operations):
             new_states = {}
-            if operation[0] == "inp":
-                for state, model_number in self.states.items():
-                    for i in range(1, 10):
-                        new_state = list(state)
-                        new_state[letter_2_number[operation[1]]] = i
-                        new_state = tuple(new_state)
-                        if int(model_number + str(i)) > int(new_states.get(new_state, 0)):
-                            new_states[new_state] = model_number + str(i)
-            elif operation[0] == "add":
-                for state, model_number in self.states.items():
-                    new_state = apply_operation(state, operation, lambda x, y: x + y)
-                    if int(model_number) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number
-            elif operation[0] == "mul":
-                for state, model_number in self.states.items():
-                    new_state = apply_operation(state, operation, lambda x, y: x * y)
-                    if int(model_number) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number
-            elif operation[0] == "div":
-                for state, model_number in self.states.items():
-                    new_state = apply_operation(state, operation, lambda x, y: x // y)
-                    if int(model_number) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number
-            elif operation[0] == "mod":
-                for state, model_number in self.states.items():
-                    new_state = apply_operation(state, operation, lambda x, y: x % y)
-                    if int(model_number) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number
-            elif operation[0] == "eql":
-                for state, model_number in self.states.items():
-                    new_state = apply_operation(state, operation, lambda x, y: int(x == y))
-                    if int(model_number) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number
+            states = self.states.keys()
+            model_numbers = self.states.values()
+            states = np.array(list(states), dtype=int)
+            while i < len(self.operations) and self.operations[i][0] != "inp":
+                operation = self.operations[i]
+                state = apply_operation(states, operation, operation_dict[operation[0]])
+                print(i)
+                i += 1
+            for state, model_number in zip(states, model_numbers):
+                new_state = tuple(state)
+                if int(model_number) <= int(new_states.get(new_state, 1e20)):
+                    new_states[new_state] = model_number
             self.states = new_states
-            print(len(self.states))
+            if i < len(self.operations):
+                new_states = {}
+                states = self.states.keys()
+                model_numbers = self.states.values()
+                states = np.array(list(states), dtype=int)
+                for state, model_number in zip(states, model_numbers):
+                    for j in range(1, 10):
+                        state[letter_2_number[self.operations[i][1]]] = j
+                        new_state = tuple(state)
+                        if int(model_number + str(j)) < int(new_states.get(new_state, 1e20)):
+                            new_states[new_state] = model_number + str(j)
+                self.states = new_states
+                i += 1
 
     def search_highest(self):
         i = 0
@@ -71,20 +63,30 @@ class ALU:
             states = self.states.keys()
             model_numbers = self.states.values()
             states = np.array(list(states), dtype=int)
-            while self.operations[i][0] != "inp":
+            while i < len(self.operations) and self.operations[i][0] != "inp":
                 operation = self.operations[i]
                 state = apply_operation(states, operation, operation_dict[operation[0]])
+                print(i)
                 i += 1
             for state, model_number in zip(states, model_numbers):
-                for j in range(1, 10):
-                    state[letter_2_number[self.operations[i][1]]] = j
-                    new_state = tuple(state)
-                    if int(model_number + str(j)) > int(new_states.get(new_state, 0)):
-                        new_states[new_state] = model_number + str(j)
+                new_state = tuple(state)
+                if int(model_number) >= int(new_states.get(new_state, 0)):
+                    new_states[new_state] = model_number
             self.states = new_states
-            print(i)
-            print(len(self.states))
-            i += 1
+            if i < len(self.operations):
+                new_states = {}
+                states = self.states.keys()
+                model_numbers = self.states.values()
+                states = np.array(list(states), dtype=int)
+                for state, model_number in zip(states, model_numbers):
+                    for j in range(1, 10):
+                        state[letter_2_number[self.operations[i][1]]] = j
+                        new_state = tuple(state)
+                        if int(model_number + str(j)) > int(new_states.get(new_state, 0)):
+                            new_states[new_state] = model_number + str(j)
+                self.states = new_states
+                i += 1
+
 
 
 operation_dict = {
@@ -120,9 +122,18 @@ def part1():
 
 
 def part2():
-    cubes, on_offs = get_input()
+    alu = get_input()
+
+    alu.search_lowest()
+
+    min_model_number = int(1e20)
+    for state, model_number in alu.states.items():
+        if state[3] == 0 and int(model_number) < min_model_number:
+            min_model_number = int(model_number)
+
+    print(min_model_number)
 
 
 if __name__ == "__main__":
     part1()
-    # part2()
+    part2()
